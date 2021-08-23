@@ -180,7 +180,7 @@ def about():
 
 @app.route('/contact', methods=["GET", "POST"])
 def contact():
-    if request.method == "POST":
+    if request.methods == "POST":
         with smtplib.SMTP(host="smtp.gmail.com", port="587") as server:
             server.starttls()
             server.login(user=os.environ.get("MY_EMAIL"), password=os.environ.get("MY_PASSWORD"))
