@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -11,6 +11,7 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 import os
+import smtplib
 
 
 app = Flask(__name__)
@@ -177,9 +178,24 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route('/contact', methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    if request.method == "POST":
+        with smtplib.SMTP(host="smtp.gmail.com", port="587") as server:
+            server.starttls()
+            server.login(user=os.environ.get("MY_EMAIL"), password=os.environ.get("MY_PASSWORD"))
+            server.sendmail(
+                from_addr=os.environ.get("MY_EMAIL"),
+                to_addrs="skk980923@gmail.com",
+                msg=f"Subject: New Message\n\n"
+                    f"Name: {request.form['name']}\n"
+                    f"Email: {request.form['email']}\n"
+                    f"Phone number: {request.form['phone']}\n"
+                    f"Message: {request.form['message']}\n"
+            )
+        return render_template("contact.html", msg_sent=True)
+    else:
+        return render_template("contact.html", msg_sent=False)
 
 
 @app.route("/new-post", methods=["GET", "POST"])
